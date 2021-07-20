@@ -11,6 +11,7 @@ let socketio = socketIO(servidorHttp);
 
 // Rutas
 app.get('/', (req, res) => res.sendFile(__dirname + "/index.html"))
+app.get('/login', (req,res) => {res.sendFile(__dirname + "/login.html")})
 
 //levantando el server
 servidorHttp.listen(3001, function () {
@@ -62,16 +63,16 @@ socketio.on('connection', function (websocket) {
         socketio.emit('mensaje broadcast', "Sistema "+dateTime+": "+mensaje)}
     , 60 * 1000);
 
-    
+
 });
 
 // Funciones auxiliares
 function getDateAndTime(){
-    let currentdate = new Date(); 
+    let currentdate = new Date();
     return "(" + currentdate.getDate() + "/"
-                + (currentdate.getMonth()+1)  + "/" 
-                + currentdate.getFullYear() + " @ "  
-                + currentdate.getHours() + ":"  
-                + currentdate.getMinutes() + ":" 
+                + (currentdate.getMonth()+1)  + "/"
+                + currentdate.getFullYear() + " @ "
+                + currentdate.getHours() + ":"
+                + currentdate.getMinutes() + ":"
                 + currentdate.getSeconds()+")";
 }
