@@ -19,6 +19,10 @@
             <script>
                 $(document).ready(function () {
                     let socket = io();
+
+                    // TODO al loguerase se recibe el userName
+                    userName = "Advincula";
+                    socket.emit('join', userName);
     
                     // cuando el usuario envie un mensaje
                     $("form").submit(function () {

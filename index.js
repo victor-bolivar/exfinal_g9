@@ -30,6 +30,12 @@ socketio.on('connection', function (websocket) {
     cantidadClientesConectados++;
     socketio.emit("conectados",cantidadClientesConectados);
 
+    // se usa el usuario para asignarlos a un room
+    // En este caso se hace uso de rooms para enviar la respuestas de los comandos solo al usuario en especifico
+    websocket.on('join', function (data) {
+        websocket.join(nombreCliente); 
+      });
+
     // TODO desconexion de usuario
     websocket.on("disconnect", function () {
         console.log("usuario " + nombreCliente + " desconectado");
@@ -41,9 +47,14 @@ socketio.on('connection', function (websocket) {
     websocket.on("mensaje de chat", function (mensaje) {
         let dateTime = getDateAndTime();
 
-        // TODO validar si se trata de un comando
+        //validar si se trata de un comando
+        let resultado = validarComando(mensaje)
+        if(resultado[0] == false){
+            socketio.emit("mensaje broadcast", nombreCliente + " "+dateTime+": "+mensaje);
+        } else {
+            socketio.emit("mensaje broadcast", "Sistema "+dateTime+": "+resultado[1]);
+        }
 
-        socketio.emit("mensaje broadcast", nombreCliente + " "+dateTime+": "+mensaje);
     });
 
     // mensaje del sistema cada 1 min
@@ -78,4 +89,28 @@ function getDateAndTime(){
                 + currentdate.getHours() + ":"  
                 + currentdate.getMinutes() + ":" 
                 + currentdate.getSeconds()+")";
+}
+function validarComando(mensaje){
+    let isCommand = false;
+
+    if(mensaje == 'cmd-mensajes'){
+        isCommand = true
+        let cantidadMensajes = 80; // TODO hardcodeado
+        let respuesta = "cantidad de mensajes : "+cantidadMensajes;
+        return [isCommand, respuesta]
+
+    } else if(mensaje == 'cmd-usuarios-c'){
+        isCommand = true
+        let respuesta = "cantidad de usuarios conectados "+cantidadClientesConectados;
+        return [isCommand, respuesta]
+
+    } else if(mensaje.startsWith('cmd-')){
+        isCommand = true
+        let palabra = mensaje.substr(4);
+        let cantidadMensajes = 20; // TODO hardcodeado
+        let respuesta = "cantidad de mensajes con "+palabra+": "+cantidadMensajes;
+        return [isCommand, respuesta]
+    } else{
+        return [isCommand, '']
+    }
 }
