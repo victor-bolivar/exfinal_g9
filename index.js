@@ -37,9 +37,12 @@ socketio.on('connection', function (websocket) {
         socketio.emit("conectados",cantidadClientesConectados);
     });
 
-    // TODO mensaje recibido de usuario
+    // mensaje recibido de usuario
     websocket.on("mensaje de chat", function (mensaje) {
         let dateTime = getDateAndTime();
+
+        // TODO validar si se trata de un comando
+
         socketio.emit("mensaje broadcast", nombreCliente + " "+dateTime+": "+mensaje);
     });
 
@@ -54,7 +57,8 @@ socketio.on('connection', function (websocket) {
         'recuerda tomar agua',
         'viva la vida, y no dejes que la vida te viva -Albert einsten 2010',
         'sigue adelante!',
-        'no dejes para mañana lo que puedes dejar para pasado mañana'
+        'no dejes para mañana lo que puedes dejar para pasado mañana',
+        'sale dotita?'
     ]
     setInterval(() => {
         let mensaje = mensajes[Math.floor(Math.random()*mensajes.length)];
