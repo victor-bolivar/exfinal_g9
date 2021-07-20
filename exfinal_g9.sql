@@ -18,9 +18,9 @@ USE `exfinal_g9` ;
 -- Table `exfinal_g9`.`usuario`
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `exfinal_g9`.`usuario` (
-  `idusuario` INT NOT NULL,
+  `idusuario` INT NOT NULL AUTO_INCREMENT,
   `username` VARCHAR(45) NULL,
-  `password` VARCHAR(45) NULL,
+  `password` VARCHAR(64) NULL,
   PRIMARY KEY (`idusuario`))
 ENGINE = InnoDB;
 

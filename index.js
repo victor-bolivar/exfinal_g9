@@ -3,6 +3,27 @@ const express = require('express')
 const app = express()
 const port = 3001
 
+//Mysql
+const mysqlcon = require('mysql2')
+const conn = mysqlcon.createConnection({
+    host: "localhost",
+    user: "root",
+    password: "root",
+    database: "exfinal_g9",
+
+})
+conn.connect((error) => {
+    //testeamos bbdd
+    if (error) {
+        console.log(error);
+    } else {
+        console.log("Conexion correcta a BD");
+    }
+})
+
+addTestUsersFirstTimeDb()
+
+
 // Socket.io
 const http = require("http");
 const socketIO = require("socket.io");
@@ -10,12 +31,14 @@ let servidorHttp = http.Server(app);
 let socketio = socketIO(servidorHttp);
 
 // Rutas
-app.get('/login', (req,res) => {res.sendFile(__dirname + "/login.html")})
+app.get('/login', (req, res) => {
+    res.sendFile(__dirname + "/login.html")
+})
 app.get('/', (req, res) => res.sendFile(__dirname + "/index.html"))
 
 
 //levantando el server
-servidorHttp.listen(3001, function () {
+servidorHttp.listen(port, function () {
     console.log("Servidor arriba");
 });
 
@@ -30,35 +53,35 @@ socketio.on('connection', function (websocket) {
     let nombreCliente = "Advincula";
     console.log("Usuario conectado");
     cantidadClientesConectados++;
-    socketio.emit("conectados",cantidadClientesConectados);
+    socketio.emit("conectados", cantidadClientesConectados);
 
     // se usa el usuario para asignarlos a un room
     // En este caso se hace uso de rooms para enviar la respuestas de los comandos solo al usuario en especifico
     websocket.on('join', function (data) {
-        websocket.join(nombreCliente); 
-      });
+        websocket.join(nombreCliente);
+    });
 
     // TODO desconexion de usuario
     websocket.on("disconnect", function () {
         console.log("usuario " + nombreCliente + " desconectado");
         cantidadClientesConectados--;
-        socketio.emit("conectados",cantidadClientesConectados);
+        socketio.emit("conectados", cantidadClientesConectados);
     });
 
     // mensaje recibido de usuario
     websocket.on("mensaje de chat", function (mensaje) {
         let dateTime = getDateAndTime();
 
-        if(mensaje== "hielo" || mensaje=="crash" || mensaje == "chetos"){
+        if (mensaje == "hielo" || mensaje == "crash" || mensaje == "chetos") {
             // TODO logout y redireccion
         }
 
         //validar si se trata de un comando
         let resultado = validarComando(mensaje)
-        if(resultado[0] == false){
-            socketio.emit("mensaje broadcast", nombreCliente + " "+dateTime+": "+mensaje);
+        if (resultado[0] == false) {
+            socketio.emit("mensaje broadcast", nombreCliente + " " + dateTime + ": " + mensaje);
         } else {
-            socketio.emit("mensaje broadcast", "Sistema "+dateTime+": "+resultado[1]);
+            socketio.emit("mensaje broadcast", "Sistema " + dateTime + ": " + resultado[1]);
         }
 
     });
@@ -78,45 +101,87 @@ socketio.on('connection', function (websocket) {
         'sale dotita?'
     ]
     setInterval(() => {
-        let mensaje = mensajes[Math.floor(Math.random()*mensajes.length)];
-        let dateTime = getDateAndTime();
-        socketio.emit('mensaje broadcast', "Sistema "+dateTime+": "+mensaje)}
-    , 60 * 1000);
+            let mensaje = mensajes[Math.floor(Math.random() * mensajes.length)];
+            let dateTime = getDateAndTime();
+            socketio.emit('mensaje broadcast', "Sistema " + dateTime + ": " + mensaje)
+        }
+        , 60 * 1000);
 
-    
+
 });
 
 // Funciones auxiliares
-function getDateAndTime(){
-    let currentdate = new Date(); 
+function getDateAndTime() {
+    let currentdate = new Date();
     return "(" + currentdate.getDate() + "/"
-                + (currentdate.getMonth()+1)  + "/" 
-                + currentdate.getFullYear() + " @ "  
-                + currentdate.getHours() + ":"  
-                + currentdate.getMinutes() + ":" 
-                + currentdate.getSeconds()+")";
+        + (currentdate.getMonth() + 1) + "/"
+        + currentdate.getFullYear() + " @ "
+        + currentdate.getHours() + ":"
+        + currentdate.getMinutes() + ":"
+        + currentdate.getSeconds() + ")";
 }
-function validarComando(mensaje){
+
+function validarComando(mensaje) {
     let isCommand = false;
 
-    if(mensaje == 'cmd-mensajes'){
+    if (mensaje == 'cmd-mensajes') {
         isCommand = true
         let cantidadMensajes = 80; // TODO hardcodeado
-        let respuesta = "cantidad de mensajes : "+cantidadMensajes;
+        let respuesta = "cantidad de mensajes : " + cantidadMensajes;
         return [isCommand, respuesta]
 
-    } else if(mensaje == 'cmd-usuarios-c'){
+    } else if (mensaje == 'cmd-usuarios-c') {
         isCommand = true
-        let respuesta = "cantidad de usuarios conectados "+cantidadClientesConectados;
+        let respuesta = "cantidad de usuarios conectados " + cantidadClientesConectados;
         return [isCommand, respuesta]
 
-    } else if(mensaje.startsWith('cmd-')){
+    } else if (mensaje.startsWith('cmd-')) {
         isCommand = true
         let palabra = mensaje.substr(4);
         let cantidadMensajes = 20; // TODO hardcodeado
-        let respuesta = "cantidad de mensajes con "+palabra+": "+cantidadMensajes;
+        let respuesta = "cantidad de mensajes con " + palabra + ": " + cantidadMensajes;
         return [isCommand, respuesta]
-    } else{
+    } else {
         return [isCommand, '']
     }
+}
+
+
+function addTestUsersFirstTimeDb() {
+    countquery = "select count(*) as count from exfinal_g9.usuario;"
+    insertquery = "insert into exfinal_g9.usuario (username, password) values (?, sha256(?));"
+    var thecount = 0
+    var arr = [
+        {
+            username: "leitoxd", password: "123456"
+        },
+        {
+            username: "marioxd", password: "333333"
+        },
+        {
+            username: "saritaxd", password: "xdxdxd"
+        },
+        {
+            username: "milixd", password: "asdasd"
+        },
+        {
+            username: "pattyxd", password: "999999"
+        },
+    ]
+    conn.query(countquery, (err,res) => {
+        if(err){
+            console.log(err)
+        } else if (res) {
+            console.log(res[0].count)
+            thecount = res[0].count
+        }
+    })
+    if(thecount == 0 ){
+        for (const data in arr) {
+            conn.query(insertquery, [data.username, data.password], (err => {
+                if (err) console.log(err)
+            }))
+        }
+    }
+
 }
