@@ -11,6 +11,34 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM" crossorigin="anonymous"></script>
 
+    <script src="/socket.io/socket.io.js"></script>
+    <script crossorigin="anonymous"
+            integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4="
+            src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    
+            <script>
+                $(document).ready(function () {
+                    let socket = io();
+    
+                    // cuando el usuario envie un mensaje
+                    $("form").submit(function () {
+                        let textoEnviar = $("#mensaje").val();
+                        socket.emit("mensaje de chat", textoEnviar);
+                        $("#mensaje").val("");
+                        return false;
+                    });
+    
+                    socket.on("mensaje broadcast", function (mensaje) {
+                        console.log(mensaje);
+                        $("#messages").append("<li>" + mensaje + "</li>");
+                    });
+    
+                    socket.on("conectados",function(cantConec){
+                        $("#cantidad").html(cantConec);
+                    });
+                });
+            </script>
+    
     <style>
         .conectado{
             color: green;
@@ -29,7 +57,7 @@
     </div>
 
     <div class="container">
-        <h5>Usuarios conectados: 8080808080</h5>
+        <h5>Usuarios conectados: <span id="cantidad"></span> </h5>
         <ul>
             <li class="conectado">Victor Bolivar (4/20/2020 4:20)</li>
             <li class="desconectado">Gianluca Lapadios</li>
@@ -38,7 +66,7 @@
     </div>
 
     <div class="container">
-        <ul style="list-style: none;">
+        <ul id="messages" style="list-style: none;">
             <li>Gareca (2/2/2022): ez brasil</li>
         </ul>
         <form action="">
